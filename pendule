@@ -1,79 +1,54 @@
-from matplotlib.pyplot import *
-from math import cos
+from matplotlib.pyplot import *  # permet de tracer un pgraphe
+import numpy as np              # permet de faire des calculs sur des listes
 
-#indiquer ci-dessous le chemin du fichier qui contient les mesures
-donnees = open("mesures.csv",'r')
+# lecture des mesures obtenues avec le gyroscope
+# indiquer ci-dessous le chemin du fichier qui contient les mesures
+t,omegax,omegay,omegaz,norme = np.genfromtxt('mesures.csv', delimiter=';',unpack=True)
 
 # indiquer ci-dessous le nombre de lignes d'en-tete
 lignes_intro=1
-
-# lecture des mesures obtenues avec le gyroscope
-dates=[]
-omegas=[]
-for ligne in range(lignes_intro):
-    donnees.readline()
-while True:
-    ligne=donnees.readline()
-    if not(ligne):
-        break
-    else:
-        mesures=ligne.split(";")
-        date=float(mesures[0])
-        dates.append(date)
-        omega=float(mesures[1])
-        omegas.append(omega)
-print(len(dates))
-print(len(omegas))
-donnees.close()
+t=np.delete(t,lignes_intro-1)
+omega=np.delete(omegax,lignes_intro)
 
 # Calcul de theta
-angles=[0]
+angles=[0]  # on crée d'abord une grandeur "angle" qui n'est pas égale à 0
+            # lorsque le pendule passe par la verticale.
 total=0
-for i in range(1,len(dates)):
-    angle=angles[i-1]+omegas[i]*(dates[i]-dates[i-1])
+
+for i in range(1,len(t)):
+    angle=angles[i-1]+omega[i]*(t[i]-t[i-1])
     total=total+angle
     angles.append(angle)
-moyenne=total/len(dates)
-print(moyenne)
+moyenne=total/len(t)
+print(moyenne) # la valeur moyenne de cet angle n'est pas nulle
 
-thetas=[]
-for i in range(0,len(dates)):
-    theta=angles[i]-moyenne
-    thetas.append(theta)
+thetas=angles-moyenne      # on crée une grandeur "theta" qui est égale à 0
+                           # lorsque le pendule passe par la verticale.
 
 #calcul de l'énergie cinétique
 m=0.163 # masse en kg
 l=0.409 # longeur du pendule en m
 g= 9.81 # intensité de pesanteur SI
-Ec=[]   # initialisation de la liste de l'énergie cinétique
-for i in range(0,len(dates)):
-    ec=0.5*m*(l*omegas[i])**2
-    Ec.append(ec)
+Ec= 0.5*m*(l*omega)**2
 
 #calcul de l'énergie potentielle de pesanteur
-Epp=[]   # initialisation de la liste de l'énergie potentielle de pesanteur
-for i in range(0,len(dates)):
-    epp=m*g*l*(1-cos(thetas[i]))
-    Epp.append(epp)
+Epp=m*g*l*(1-np.cos(thetas))   # initialisation de la liste de l'énergie potentielle de pesanteur
 
 #calcul de l'énergie mécanique
-Em=[]   # initialisation de la liste de l'énergie mécanique
-for i in range(0,len(dates)):
-    em=Ec[i]+Epp[i]
-    Em.append(em)
+Em=Ec+Epp
 
 # Tracés
 subplot(211)
 xlabel("temps (s)")
-plot(dates,omegas,label="vitesse angulaire (rad/s)")
-plot(dates,thetas,label="angle theta (rad)")
+plot(t,omega,label="vitesse angulaire (rad/s)")
+plot(t,thetas,label="angle theta (rad)")
 legend()
 
 subplot(212)
 xlabel("temps (s)")
-plot(dates,Ec,label="énergie cinétique")
-plot(dates,Epp,label="énergie potentielle de pesanteur")
-plot(dates,Em,label="énergie mécanique du pendule")
+plot(t,Ec,label="énergie cinétique")
+plot(t,Epp,label="énergie potentielle de pesanteur")
+plot(t,Em,label="énergie mécanique du pendule")
 legend()
 show()
 
