@@ -1,0 +1,87 @@
+import matplotlib.pyplot as plt  # permet de tracer un graphe
+import numpy as np              # permet de faire des calculs sur des listes
+
+# lecture des mesures obtenues
+# indiquer ci-dessous le chemin du fichier qui contient les mesures, ainsi que le nom des colonnes
+T,X,Y,VX,VY= np.genfromtxt('balle_parabole.txt', delimiter=' ', skip_header=2,unpack=True)
+
+# modélisation de x=f(t)
+vox,xo=np.polyfit(T,X,1)
+equation1="x = "+"%.2E"%vox +" t + " + "%.2E"%xo
+
+# modélisation de y=f(t)
+a,voy,h=np.polyfit(T,Y,2)
+equation2="y = "+"%.2E"%a +" t^2 + " + "%.2E"%voy +" t + " + "%.2E"%h
+
+# modélisation de vx=f(t)
+vox2=np.polyfit(T,VX,0)
+equation3="vx =  " + "%.2E"%vox2
+
+# modélisation de vy=f(t)
+g,voy2=np.polyfit(T,VY,1)
+equation4="vy = "+"%.2E"%g +" t + " + "%.2E"%voy2
+
+# calcul de la norme de la vitesse
+V = (VX**2+VY**2)**0.5
+
+# calcul de l'énergie cinétique
+Ec = 0.5*0.1*V**2
+
+# calcul de l'énergie potentielle
+Epp = 0.1*9.81*Y
+
+# calcule de l'énergie mécanique
+Em = Ec + Epp
+
+
+# Tracés
+# des coordonnées de position en fonction du temps
+plt.subplot(221)
+plt.xlabel("temps (s)")
+plt.plot(T,X,label="x en m")
+plt.plot(T,Y,label="y en m")
+plt.legend()
+plt.grid()
+plt.text(max(T)/2,max(X),equation1)
+plt.text(max(T)/2,max(Y),equation2)
+
+# des coordonnées de vitesse en fonction du temps
+plt.subplot(222)
+plt.xlabel("temps (s)")
+plt.plot(T,VX,label="vx en m/s")
+plt.plot(T,VY,label="vy en m/s")
+plt.grid()
+plt.legend()
+plt.text(max(T)/2,max(VX),equation3)
+plt.text(max(T)/2,0,equation4)
+
+# de la trajectoire, des vecteurs vitesse et variation de vitesse
+plt.subplot(223)
+plt.xlabel("x en m")
+plt.plot(X,Y,label="trajectoire")
+plt.axis("equal")
+plt.grid()
+plt.legend()
+for i in range(2,len(X)-1,1):
+    echelle=0.1
+    plt.scatter(X[i],Y[i],marker='x')
+    plt.arrow(X[i],Y[i],VX[i]*echelle,VY[i]*echelle,length_includes_head=True, head_width=0.01, edgecolor='red')
+    plt.arrow(X[i],Y[i],(VX[i+1]-VX[i-1])*echelle,(VY[i+1]-VY[i-1])*echelle,length_includes_head=True, head_width=0.01, edgecolor='green')
+plt.text(0,0, 'en rouge: vecteurs vitesse', color ='red')
+plt.text(0,-0.1,'en vert: vecteurs variation de vitesse', color = 'green')
+
+# des énergies cinétique, potentielle et mécanique
+plt.subplot(224)
+plt.xlabel("t en s")
+plt.plot(T,Ec,label="énergie cinétique")
+plt.plot(T,Epp,label="énergie potentielle de pesanteur")
+plt.plot(T,Em,label="énergie mécanique")
+plt.grid()
+plt.legend()
+
+plt.show()
+plt.close()
+
+
+
+
